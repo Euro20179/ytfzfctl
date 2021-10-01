@@ -44,6 +44,11 @@ EOF
 	read -r instance
 	echo "$instance"
 }
+
+die () {
+    print_info "\033[31m$2\033[0m\n"
+    exit $1
+}
 #}}}
 
 # action functions {{{
@@ -136,7 +141,7 @@ shift $((OPTIND-1))
 #}}}
 
 action="$1"
-shift 1
+[ -n "$action" ] && shift 1 || die 1 "no action given\ntry: ytfzfctl -h"
 
 case "$action" in
     update) 
