@@ -6,13 +6,13 @@
 
 global_help () {
     printf "%s" \
-"Usage: ytfzf-tools [global options...] <action> [action options...] [action arguments...]
+"Usage: ytfzfctl [global options...] <action> [action options...] [action arguments...]
     global options:
 	-m:             Pick a running ytfzf instance manually
     actions:
 	update [branch]:         Updates ytfzf to branch, defaults to master (stable)
 	video-info <info...>:    Gets information about the selected video in an instance.
-				 See \"ytfzf-tools video-info -h\" for more information.
+				 See \"ytfzfctl video-info -h\" for more information.
 	convert-subs:            converts each link in your subscriptions file to a valid link
 "
 }
@@ -70,27 +70,34 @@ wait
 
 convert_subscriptions_help () { #{{{
     print_info
-"Usage: ytfzf-tools convert-subscriptions\n"
+"Usage: ytfzfctl convert-subscriptions\n"
 } #}}}
 
 update_ytfzf (){ #{{{
     _branch=$1
+    _patches_to_apply=$2
     ytfzf_location="$(command -v ytfzf)"
     git clone "https://github.com/pystardust/ytfzf" _tmp_ytfzf
     cd _tmp_ytfzf
     git checkout "$_branch"
-    sudo make install
+    IFS=","
+    for pat in $_patches_to_apply; do
+	patch < $pat
+    done
+    sudo make install man
     cd ..
     rm -rf _tmp_ytfzf
     printf "ytfzf updated\n"
 } #}}}
 update_ytfzf_help () { #{{{
     print_info \
-"Usage: ytfzf-tools update [branch]
+"Usage: ytfzfctl update [options...] [branch]
     Recommended branches:
 	master: stable branch
 	development: unstable branch
 	rewrite: the rewrite of ytfzf
+    Options:
+	-p <paths>                  A list of paths to patches seperated by commas to apply before installing.
 "
 } #}}}
 	
@@ -111,7 +118,7 @@ get_video_info () { #{{{
 } #}}}
 get_video_info_help () { #{{{
     print_info \
-"Usage: ytfzf-tools video-info <information...>
+"Usage: ytfzfctl video-info <information...>
     information is what information you want, seperated by commas
     standard information:
 	ID: video id
@@ -145,11 +152,15 @@ action="$1"
 
 case "$action" in
     update) 
-	while getopts "h" OPT; do
-	    [ "$OPT" = "h" ] && update_ytfzf_help && exit
+	while getopts "hp:" OPT; do
+	    case "$OPT" in
+		h) update_ytfzf_help && exit ;;
+		p) patches_to_apply="$OPTARG" ;;
+	    esac
 	done
+	shift $((OPTIND-1))
 	branch="${1:-master}"
-	update_ytfzf "$branch" ;;
+	update_ytfzf "$branch" "$patches_to_apply" ;;
     video-info)
 	while getopts "h" OPT; do
 	    [ "$OPT" = "h" ] && get_video_info_help && exit
