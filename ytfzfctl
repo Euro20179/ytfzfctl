@@ -22,6 +22,14 @@ print_info () {
     printf "$1" >&2
 }
 
+is_absolute_path (){ 
+    [ -z "$1" ] && read -r path && set -- "$path"
+    case "$path" in
+	./*|../*|~/*|/*) return 0 ;;
+	*) return 1 ;;
+    esac
+}
+
 get_instances () {
 	instances="$(pgrep -x ytfzf)"
 	for instance in $instances; do
@@ -82,6 +90,7 @@ update_ytfzf (){ #{{{
     git checkout "$_branch"
     IFS=","
     for pat in $_patches_to_apply; do
+	is_absolute_path "$pat" || pat="$HOME/.config/ytfzf/patches/$pat"
 	patch < $pat
     done
     sudo make install man
@@ -98,6 +107,7 @@ update_ytfzf_help () { #{{{
 	rewrite: the rewrite of ytfzf
     Options:
 	-p <paths>                  A list of paths to patches seperated by commas to apply before installing.
+	                            If the path is not absolute, it will look for the patch in ~/.config/ytfzf/patches
 "
 } #}}}
 	
