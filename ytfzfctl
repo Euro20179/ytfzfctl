@@ -142,25 +142,6 @@ get_video_info_help () { #{{{
     a video is only required to have ID, url, and title, and some videos may have more non-standard information.
 "
 } #}}}
-
-gen_ytdl_format () { #{{{
-    video_pref=
-    printf "%s\n" "leave each option empty for none"
-    while :; do
-	printf "%s: " 'filesize'
-	read -r filesize
-	printf "\n%s: " 'width'
-	read -r width
-	printf "\n%s: " 'height (eg: 720p)'
-	read -r height
-	height="${height%%p}"
-	printf "\n%s: " "fps"
-	read -r fps
-	printf "\n%s: " "file extension (eg: mp4)"
-	read -r file_extension
-    done
-}
-#}}}
 #}}}
 
 
@@ -198,10 +179,4 @@ case "$action" in
 	    [ "$OPT" = "h" ] && convert_subscriptions_help && exit
 	done
 	convert_subscriptions ;;
-    gen-youtube-dl-format|gen-ytdl-format)
-	while getopts "h" OPT; do
-	    [ "$OPT" = "h" ] && gen_ytdl_format_help && exit
-	done
-	gen_ytdl_format ;;
-
 esac
