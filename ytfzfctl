@@ -75,7 +75,6 @@ EOF
 wait
 
 } #}}}
-
 convert_subscriptions_help () { #{{{
     print_info
 "Usage: ytfzfctl convert-subscriptions\n"
@@ -117,12 +116,12 @@ get_video_info () { #{{{
     [ $manual_instance_pick -eq 1 ] && instance="$(pick_instance)" || instance=1
     search="$(printf "%s" "$searches" | sed -n ${instance}p)"
     if [ $attributes = "all" ]; then
-	jq -r '.[]|select(.ID=="'$(cat "$HOME/.cache/ytfzf/$search/ids")'")' < "$HOME/.cache/ytfzf/$search/videos_json"
+	jq -r '.[]|select(.url=="'$(cat "$HOME/.cache/ytfzf/$search/ids")'")' < "$HOME/.cache/ytfzf/$search/videos_json"
     else
 	set -f
 	IFS=,
 	for attr in $attributes; do
-	    jq -r '.[]|select(.ID=="'$(cat "$HOME/.cache/ytfzf/$search/ids")'").'"$attr"'' < "$HOME/.cache/ytfzf/$search/videos_json"
+	    jq -r '.[]|select(.url=="'$(cat "$HOME/.cache/ytfzf/$search/ids")'").'"$attr"'' < "$HOME/.cache/ytfzf/$search/videos_json"
 	done
     fi
 } #}}}
@@ -144,6 +143,24 @@ get_video_info_help () { #{{{
 "
 } #}}}
 
+gen_ytdl_format () { #{{{
+    video_pref=
+    printf "%s\n" "leave each option empty for none"
+    while :; do
+	printf "%s: " 'filesize'
+	read -r filesize
+	printf "\n%s: " 'width'
+	read -r width
+	printf "\n%s: " 'height (eg: 720p)'
+	read -r height
+	height="${height%%p}"
+	printf "\n%s: " "fps"
+	read -r fps
+	printf "\n%s: " "file extension (eg: mp4)"
+	read -r file_extension
+    done
+}
+#}}}
 #}}}
 
 
@@ -181,4 +198,10 @@ case "$action" in
 	    [ "$OPT" = "h" ] && convert_subscriptions_help && exit
 	done
 	convert_subscriptions ;;
+    gen-youtube-dl-format|gen-ytdl-format)
+	while getopts "h" OPT; do
+	    [ "$OPT" = "h" ] && gen_ytdl_format_help && exit
+	done
+	gen_ytdl_format ;;
+
 esac
