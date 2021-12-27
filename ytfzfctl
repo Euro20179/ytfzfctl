@@ -146,6 +146,7 @@ get_video_info_help () { #{{{
 "
 } #}}}
 
+#playlist help{{{
 playlist_help (){
     print_info \
 "Usage: ytfzfctl playlist <action> [args...]
@@ -158,6 +159,7 @@ playlist_help (){
 	r <playlist-name> <ytfzf-args>:    remove video(s) from a playlist
 "
 }
+#}}}
 #playlist{{{
 playlist (){
     playlist_action="$1"
@@ -218,6 +220,37 @@ playlist (){
     esac
 }
 #}}}
+
+#scrapers help{{{
+scrapers_help(){
+    print_info \
+"Usage ytfzfctl scrapers <command> [args...]
+    commands:
+	list | l:             list installed scrapers
+	install | i <link>:   install a scraper from a git link
+"
+}
+
+#scrapers{{{
+scrapers () {
+    path="${YTFZF_CUSTOM_SCRAPERS_DIR:-${YTFZF_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/ytfzf}/scrapers}"
+    case "$1" in
+	list|l)
+	    ls -1 "$path" | sed '/.*\.conf$/d' ;;
+	install|i)
+	    shift
+	    url="$1"
+	    git clone "$url" "_tmp_scraper"
+	    cd "_tmp_scraper"
+	    ls
+	    cp *.conf "$path" 
+	    name=$(echo *.ytfzfscraper | sed 's/\.ytfzfscraper$//')
+	    cp *.ytfzfscraper "$path/$name"
+	    cd ..
+	    rm -rf "_tmp_scraper";;
+    esac
+}
+#}}}
 #}}}
 
 
@@ -260,4 +293,9 @@ case "$action" in
 	    [ "$OPT" = "h" ] && playlist_help && exit
 	done
 	playlist "$@";;
+    scrapers)
+	while getopts "h" OPT; do
+	    [ "$OPT" = "h" ] && scrapers_help && exit
+	done
+	scrapers "$@" ;;
 esac
