@@ -121,12 +121,20 @@ get_video_info () { #{{{
     [ $manual_instance_pick -eq 1 ] && instance="$(pick_instance)" || instance=1
     search="$(printf "%s" "$searches" | sed -n ${instance}p)"
     if [ $attributes = "all" ]; then
-	jq -r '.[]|select(.url=="'$(cat "$HOME/.cache/ytfzf/$search/ids")'")' < "$HOME/.cache/ytfzf/$search/videos_json"
+	while read -r url; do
+	    jq -r '.[]|select(.url=="'$url'")' < "$HOME/.cache/ytfzf/$search/videos_json"
+	done <<-EOF
+	$(cat "$HOME/.cache/ytfzf/$search/ids")
+	EOF
     else
 	set -f
 	IFS=,
 	for attr in $attributes; do
-	    jq -r '.[]|select(.url=="'$(cat "$HOME/.cache/ytfzf/$search/ids")'").'"$attr"'' < "$HOME/.cache/ytfzf/$search/videos_json"
+	    while read -r url; do
+		jq -r '.[]|select(.url=="'$url'").'"$attr"'' < "$HOME/.cache/ytfzf/$search/videos_json"
+	    done <<-EOF
+$(cat "$HOME/.cache/ytfzf/$search/ids")
+EOF
 	done
     fi
 } #}}}
