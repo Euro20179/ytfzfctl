@@ -39,7 +39,7 @@ get_instances () {
 	    searches="${searches}
 $(find $HOME/.cache/ytfzf/*-$instance -maxdepth 0 2>/dev/null | sed "s/\/home\/$USER\/.cache\/ytfzf\///")"
 	done
-	echo "$searches" | sed 1d
+	echo "$searches" | sed 1d | sed '/^[[:space:]]*$/d'
 }
 
 pick_instance () {
