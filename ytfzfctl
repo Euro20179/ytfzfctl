@@ -86,8 +86,9 @@ convert_subscriptions_help () { #{{{
 update_ytfzf (){ #{{{
     _branch=$1
     _patches_to_apply=$2
+    _fork_to_clone_from=${3:-pystardust/ytfzf}
     ytfzf_location="$(command -v ytfzf)"
-    git clone "https://github.com/pystardust/ytfzf" _tmp_ytfzf
+    git clone "https://github.com/$_fork_to_clone_from" _tmp_ytfzf
     cd _tmp_ytfzf
     git checkout "$_branch"
     IFS=","
@@ -110,6 +111,7 @@ update_ytfzf_help () { #{{{
     Options:
 	-p <paths>                  A list of paths to patches seperated by commas to apply before installing.
 	                            If the path is not absolute, it will look for the patch in ~/.config/ytfzf/patches
+	-f <user/repo>              The fork to clone from instead of pystardust/ytfzf.
 "
 } #}}}
 	
@@ -230,7 +232,7 @@ scrapers_help(){
 	install | i <link>:   install a scraper from a git link
 "
 }
-
+#}}}
 #scrapers{{{
 scrapers () {
     path="${YTFZF_CUSTOM_SCRAPERS_DIR:-${YTFZF_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/ytfzf}/scrapers}"
@@ -269,15 +271,16 @@ action="$1"
 
 case "$action" in
     update) 
-	while getopts "hp:" OPT; do
+	while getopts "hp:f:" OPT; do
 	    case "$OPT" in
 		h) update_ytfzf_help && exit ;;
 		p) patches_to_apply="$OPTARG" ;;
+		f) fork_to_clone_from="$OPTARG" ;;
 	    esac
 	done
 	shift $((OPTIND-1))
 	branch="${1:-master}"
-	update_ytfzf "$branch" "$patches_to_apply" ;;
+	update_ytfzf "$branch" "$patches_to_apply" "$fork_to_clone_from" ;;
     video-info)
 	while getopts "h" OPT; do
 	    [ "$OPT" = "h" ] && get_video_info_help && exit
