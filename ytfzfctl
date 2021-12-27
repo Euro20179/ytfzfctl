@@ -17,6 +17,8 @@ global_help () {
 	convert-subs:            converts each link in your subscriptions file to a valid link
 	playlist <action>:       create, list, add to, and delete playlists.
 				 See \"ytfzfctl playlist -h\" for more information.
+	scrapers <action>:       List, and install scrapers.
+				 See \"ytfzfctl scrapers -h\" for more information.
 "
 }
 
