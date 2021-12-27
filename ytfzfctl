@@ -2,6 +2,7 @@
 
 # Global Options {{{
 : ${manual_instance_pick:=0}
+: "${YTFZFCTL_PLAYLIST_DIR:=${XDG_CONFIG_DIR:-$HOME/.config}/ytfzf/playlists}"
 #}}}
 
 global_help () {
@@ -14,6 +15,8 @@ global_help () {
 	video-info <info...>:    Gets information about the selected video in an instance.
 				 See \"ytfzfctl video-info -h\" for more information.
 	convert-subs:            converts each link in your subscriptions file to a valid link
+	playlist <action>:       create, list, add to, and delete playlists.
+				 See \"ytfzfctl playlist -h\" for more information.
 "
 }
 
@@ -142,6 +145,79 @@ get_video_info_help () { #{{{
     a video is only required to have ID, url, and title, and some videos may have more non-standard information.
 "
 } #}}}
+
+playlist_help (){
+    print_info \
+"Usage: ytfzfctl playlist <action> [args...]
+    actions:
+	l:                                 list playlists
+	c <playlist-name>:                 create a playlist
+	d <playlist-name>:                 delete a playlist
+	a <playlist-name> <ytfzf-args>:    add video(s) to a playlist
+	p <playlist-name> <ytfzf-args>:    play a playlist in ytfzf
+	r <playlist-name> <ytfzf-args>:    remove video(s) from a playlist
+"
+}
+#playlist{{{
+playlist (){
+    playlist_action="$1"
+    case "$playlist_action" in
+	list|l)
+	    ls -1 "$YTFZFCTL_PLAYLIST_DIR" ;;
+	create|c)
+	    shift
+	    name="$1"
+	    [ -z "$name" ] && die 1 "no name given"
+	    [ -d "$YTFZFCTL_PLAYLIST_DIR" ] && mkdir -p "$YTFZFCTL_PLAYLIST_DIR"
+	    if [ -f "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl" ]; then
+		printf "%s: " "$name already exists, would you like to erase it? [y/N]"
+		read -r yn
+		case "$yn" in
+		    [yY]) echo '[]' > "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl";;
+		    *) echo aborting; exit ;;
+		esac
+	    fi;;
+	delete|d)
+	    shift
+	    name="$1"
+	    [ -z "$name" ] && die 1 "no name given"
+	    printf "%s: " "are you sure you would like to remove '$name'[Y/n]"
+	    read -r yn
+	    case "$yn" in
+		[nN]) echo aborting; exit 1;;
+		*) rm -f "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl" ;;
+	    esac ;;
+	add|a)
+	    shift
+	    name="$1"
+	    pl="${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl"
+	    shift
+	    search="$@"
+	    [ -z "$name" ] && die 1 "no name given"
+	    data="$(ytfzf --loop=0 -IVJ --interface='' "$@" | tr -d '\n' | sed 's/}{[[:space:]]*"/},{"/g')"
+	    [ -z "$data" ] && die 1 "nothing selected"
+	    new_data="$(cat "$pl" | jq '. += ['"$data"']')"
+	    echo "$new_data" > "$pl" ;;
+	play|p)
+	    shift 
+	    name="$1"
+	    shift
+	    ytfzf -cp "$@" "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl" ;;
+	remove|r)
+	    shift
+	    name="$1"
+	    shift
+	    pl="${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl"
+	    links="$(ytfzf -L "$@" -cp "$pl")"
+	    set -f
+	    for link in $links; do
+		new_data="$(jq '[ .[]|select(.url!="'"$link"'") ]' < "$pl" )"
+		echo "$new_data" > "$pl"
+		echo "removed: $link"
+	    done
+    esac
+}
+#}}}
 #}}}
 
 
@@ -179,4 +255,9 @@ case "$action" in
 	    [ "$OPT" = "h" ] && convert_subscriptions_help && exit
 	done
 	convert_subscriptions ;;
+    playlist)
+	while getopts "h" OPT; do
+	    [ "$OPT" = "h" ] && playlist_help && exit
+	done
+	playlist "$@";;
 esac
