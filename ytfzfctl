@@ -254,8 +254,6 @@ scrapers () {
 	    url="$1"
 	    git clone "$url" "_tmp_scraper"
 	    cd "_tmp_scraper"
-	    ls
-	    cp *.conf "$path" 
 	    name=$(echo *.ytfzfscraper | sed 's/\.ytfzfscraper$//')
 	    cp *.ytfzfscraper "$path/$name"
 	    cd ..
