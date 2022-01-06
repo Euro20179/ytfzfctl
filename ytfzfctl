@@ -113,7 +113,6 @@ get_video_info () { #{{{
     searches="$(get_instances)"
     [ $manual_instance_pick -eq 1 ] && instance="$(pick_instance)" || instance=1
     search="$(printf "%s" "$searches" | sed -n ${instance}p)"
-    #TODO: implement $video_info_raw
     if [ $attributes = "all" ]; then
 	while read -r url; do
 	    jq -r '.[]|select(.url=="'$url'")|[.ID,.url,.title,.thumbs,.channel,.duration,.views,.date,.description]|@tsv' < "$HOME/.cache/ytfzf/$search/videos_json" | tr '\t' '\n' | sed '$d'
@@ -277,10 +276,9 @@ case "$action" in
 	branch="${1:-master}"
 	update_ytfzf "$branch" "$patches_to_apply" "$fork_to_clone_from" ;;
     video-info)
-	while getopts "hr" OPT; do
+	while getopts "h" OPT; do
 	    case "$OPT" in
 		h) get_video_info_help && exit ;;
-		r) video_info_raw=1 ;;
 	    esac
 	done
 	get_video_info "$1";;
