@@ -40,16 +40,13 @@ get_instances () {
 }
 
 pick_instance () {
-	i=0
-	while read -r line; do
-	    [ -z "$line" ] && continue
-	    ((i++))
-	    printf "%d: %s\n" "$i" "$line" >&2
-	done << EOF
-$searches
-EOF
-	read -r -p "Pick the instance to get the link of the video: "
-	echo "$instance"
+	IFS="/"
+	set -- ${searches//$'\n'//}
+	select UNUSED_instance in "$@"; do
+	    unset UNUSED_instance
+	    echo "$REPLY"
+	    break
+	done
 }
 
 die () {
@@ -175,9 +172,8 @@ playlist (){
 	    [ -z "$name" ] && die 1 "no name given"
 	    [ -d "$YTFZFCTL_PLAYLIST_DIR" ] && mkdir -p "$YTFZFCTL_PLAYLIST_DIR"
 	    if [ -f "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl" ]; then
-		printf "%s: " "$name already exists, would you like to erase it? [y/N]"
-		read -r yn
-		case "$yn" in
+		read -r -p "$name already exists, would you like to erase it? [y/N]: "
+		case "$REPLY" in
 		    [yY]) echo '[]' > "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl";;
 		    *) echo aborting; exit ;;
 		esac
