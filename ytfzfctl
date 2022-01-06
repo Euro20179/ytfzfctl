@@ -34,9 +34,8 @@ is_absolute_path (){
 get_instances () {
 	instances="$(pgrep -x ytfzf)"
 	for instance in $instances; do
-	    printf -v searches "%s\n%s" "$searches" "$(find $HOME/.cache/ytfzf/*-$instance -maxdepth 0 2>/dev/null | sed "s/\/home\/$USER\/.cache\/ytfzf\///")"
-	done
-	echo "${searches#$'\n'}" | sed '/^[[:space:]]*$/d'
+	   find $HOME/.cache/ytfzf/*-$instance -maxdepth 0 2>/dev/null | sed "s/\/home\/$USER\/.cache\/ytfzf\///"
+	done | sed '/^[[:space:]]*$/d'
 }
 
 pick_instance () {
