@@ -171,21 +171,16 @@ playlist (){
 	    [ -d "$YTFZFCTL_PLAYLIST_DIR" ] && mkdir -p "$YTFZFCTL_PLAYLIST_DIR"
 	    if [ -f "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl" ]; then
 		read -r -p "$name already exists, would you like to erase it? [y/N]: "
-		case "$REPLY" in
-		    [yY]) echo '[]' > "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl";;
-		    *) echo aborting; exit ;;
-		esac
-	    fi;;
+		[[ "$REPLY" == [yY] ]] || { echo aborting; exit; }
+	    fi
+	    echo '[]' > "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl"  ;;
 	delete|d)
 	    shift
 	    name="$1"
 	    [ -z "$name" ] && die 1 "no name given"
 	    printf "%s: " "are you sure you would like to remove '$name'[Y/n]"
 	    read -r yn
-	    case "$yn" in
-		[nN]) echo aborting; exit 1;;
-		*) rm -f "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl" ;;
-	    esac ;;
+	    [[ "$yn" == [nN] ]] && { echo "aborting"; exit; } || rm -f "${YTFZFCTL_PLAYLIST_DIR}/${name}.ytfzfpl" ;;
 	add|a)
 	    shift
 	    name="$1"
