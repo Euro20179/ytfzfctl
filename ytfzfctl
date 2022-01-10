@@ -258,7 +258,7 @@ action="$1"
 [ -n "$action" ] && shift 1 || die 1 "no action given\ntry: ytfzfctl -h"
 
 case "$action" in
-    update) 
+    update|u) 
 	while getopts "hp:f:" OPT; do
 	    case "$OPT" in
 		h) update_ytfzf_help && exit ;;
@@ -269,26 +269,27 @@ case "$action" in
 	shift $((OPTIND-1))
 	branch="${1:-master}"
 	update_ytfzf "$branch" "$patches_to_apply" "$fork_to_clone_from" ;;
-    video-info)
+    video-info|vi)
 	while getopts "h" OPT; do
 	    case "$OPT" in
 		h) get_video_info_help && exit ;;
 	    esac
 	done
 	get_video_info "$1";;
-    convert-subscriptions|convert-subs)
+    convert-subscriptions|convert-subs|cs)
 	while getopts "h" OPT; do
 	    [ "$OPT" = "h" ] && convert_subscriptions_help && exit
 	done
 	convert_subscriptions ;;
-    playlist)
+    playlist|p)
 	while getopts "h" OPT; do
 	    [ "$OPT" = "h" ] && playlist_help && exit
 	done
 	playlist "$@";;
-    scrapers)
+    scrapers|s)
 	while getopts "h" OPT; do
 	    [ "$OPT" = "h" ] && scrapers_help && exit
 	done
 	scrapers "$@" ;;
+    *) die 1 "invalid action: $action" ;;
 esac
