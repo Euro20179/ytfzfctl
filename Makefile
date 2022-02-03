@@ -1,3 +1,4 @@
 install:
-	install ytfzfctl /usr/local/bin
+	chmod +x ytfzfctl
+	cp ytfzfctl /usr/local/bin
 .PHONY: install
