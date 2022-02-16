@@ -198,7 +198,8 @@ playlist (){
 	    data="$(ytfzf --loop=0 -IVJ --interface='' "$@" | tr -d '\n' | sed 's/}{[[:space:]]*"/},{"/g')"
 	    [ -z "$data" ] && die 1 "nothing selected"
 	    #use tee or it will overwrite the playlist, use cat or it won't work
-	    cat "$pl" | jq '. += ['"$data"']' | tee "$pl" > /dev/null ;;
+      new_data=$(cat "$pl" | jq '. += ['"$data"']')
+      echo "$new_data" > "$pl" ;;
 	play|p)
 	    shift 
 	    name="$1"
