@@ -195,6 +195,7 @@ playlist (){
 	    shift
 	    search="$@"
 	    [ -z "$name" ] && die 1 "no name given"
+        [ -z "$search" ] && die 1 "no search given"
 	    data="$(ytfzf --loop=0 -IVJ --interface='' "$@" | tr -d '\n' | sed 's/}{[[:space:]]*"/},{"/g')"
 	    [ -z "$data" ] && die 1 "nothing selected"
 	    #use tee or it will overwrite the playlist, use cat or it won't work
@@ -216,7 +217,9 @@ playlist (){
 		new_data="$(jq '[ .[]|select(.url!="'"$link"'") ]' < "$pl" )"
 		echo "$new_data" > "$pl"
 		echo "removed: $link"
-	    done
+	    done ;;
+    *)
+        die 1 "no info given\nsee ytfzfctl playlist -h\n" ;;
     esac
 }
 #}}}
